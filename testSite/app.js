@@ -1,9 +1,9 @@
 
 // load data from local json
-const us_states = d3.json('state_info.json')
-const us_cities = d3.json('us_info.json')
-const stateShapes = d3.json('states-10m.json')
-const tags = d3.json('tags.json').then(d => d.sort((a,b) => a.tag - b.tag))
+const us_states = d3.json('https://raw.githubusercontent.com/micahwilliams23/harmonic_data/main/testSite/state_info.json')
+const us_cities = d3.json('https://raw.githubusercontent.com/micahwilliams23/harmonic_data/main/testSite/us_info.json')
+const stateShapes = d3.json('https://raw.githubusercontent.com/micahwilliams23/harmonic_data/main/testSite/states-10m.json')
+const tags = d3.json('https://raw.githubusercontent.com/micahwilliams23/harmonic_data/main/testSite/tags.json')
 
 // set the dimensions and margins of the graph
 var bb = document.querySelector('#svgDiv').getBoundingClientRect(),

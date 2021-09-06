@@ -113,146 +113,6 @@ function fadeIn(className, duration = 500){
 }
 
 // add points for scatterplot
-function plotPoints(){
-
-    // change titles and axes
-    setPlotTitle('Average Headcount vs. Median Funding in Top US Cities')
-    setPlotSubtitle('Sixteen of the top fifty American cities are in California.')
-    setXAxisTitle('Median Funding ($M)')
-    setYAxisTitle('Average Headcount (IQM)')
-
-    us_cities.then(function(d){
-
-        d = d.sort((a, b) => b.companies - a.companies)
-             .filter((d, i) => i < 50 && d.median > 0.5)
-
-        var yMin, yMax;
-
-        // scale for sizing
-        var r = d3.scaleSqrt()
-            .domain([0, 6000])
-            .range([3,30]);
-
-        // scale for delaying point
-        var delayScale = d3.scaleLinear()
-            .domain([0, 99])
-            .range([0,500]);
-        
-        d.forEach((d, i) => {
-            d.rank = i+1;
-            if(d.headcount_IQM < yMin || yMin === undefined){yMin = d.headcount_IQM}
-            if(d.headcount_IQM > yMax || yMax === undefined){yMax = d.headcount_IQM}
-        })
-
-        // new y axis
-        y.domain([0, yMax]).nice()
-        svg.select(".yAxis")
-            .transition()
-            .duration(1000)
-            .call(d3.axisLeft(y));
-        
-        // new x axis
-        xLog.domain([0.5, 20])
-        svg.select(".xAxis")
-            .transition()
-            .duration(1000)
-            .call(d3.axisBottom(xLog).tickValues([0.5,1,3,10,30]).tickFormat(d => '$' + d + 'm'));
-
-        // subset of data to label
-        var labelled_cities = ['New York', 'San Francisco', 'Boston', 'Seattle', 'Sunnyvale', 'Redwood City', 'Durham', 'Waltham']
-        var labelDir = [-135, 45, -45, 100, 45, -180, 45, -180]
-        var labels = d.filter(d => labelled_cities.includes(d.city)).map(function(d, i){
-            function state(x){
-                if(x == 'California'){return 'Calif.'}
-                if(x == 'New York'){return 'N.Y.'}
-                if(x == 'Massachusetts'){return 'Mass.'}
-                if(x == 'North Carolina'){return 'N.C.'}
-                if(x == 'Washington'){return 'Wash.'}
-                else {return x}
-            }
-            d.label = d.city + ', ' + state(d.state)
-            d.x = Math.cos(labelDir[i] * Math.PI / 180) * 2.5 * r(d.companies)
-            d.y = Math.sin(labelDir[i] * Math.PI / 180) * 2.5 * r(d.companies)
-            
-            return {
-                'label': d.label,
-                'city': d.city,
-                'state': d.state,
-                'x': xLog(d.median) + d.x,
-                'y': y(d.headcount_IQM) + d.y,
-                'x0': xLog(d.median),
-                'y0': y(d.headcount_IQM),
-                'text_anchor': ['end', 'start', 'start', 'end', 'start', 'end', 'start', 'end'][i]
-            }
-        })
-            
-        svg.select('#scatterplot')
-            .selectAll('.points')
-            .data(d)
-            .enter()
-            .append('circle')
-            .classed('points', 'true')
-            .attr('cx', d => xLog(d.median))
-            .attr('cy', d => y(d.headcount_IQM))
-            .attr('r', 0)
-            .style('fill', '#0077b6')
-            .on('mouseover', mouseoverPt)
-            .on('mousemove', (event) => mousemovePt(event))
-            .on('mouseleave', mouseleavePt)
-            .transition()
-            .duration(350)
-            .style('opacity', 0.6)
-            .attr('r', d => r(d.companies))
-            .delay((d, i) => delayScale(i));;
-
-        svg.select('#scatterplot')
-            .selectAll('.labels')
-            .data(labels).enter()
-            .append('text')
-            .classed('labels', 'true')
-            .attr('x', d=>d.x)
-            .attr('y', d=>d.y + 5)
-            .attr('text-anchor', d => d.text_anchor)
-            .text(d => d.label)
-            .style('opacity', 0)
-            .transition()
-            .duration(500)
-            .style('opacity', 1);
-
-        svg.select('#scatterplot')
-            .selectAll('.labelLines')
-            .data(labels).enter()
-            .append('line')
-            .classed('labelLines', 'true')
-            .attr('x1', d => d.x)
-            .attr('x2', d => d.x0)
-            .attr('y1', d => d.y)
-            .attr('y2', d => d.y0)
-            .attr('stroke', '#0077b6')
-            .style('opacity', 0)
-            .transition()
-            .duration(500)
-            .style('opacity', 1);
-
-        var titlePos = document.querySelector('#plotTitle').getBoundingClientRect()
-        
-        // make search bar
-        d3.select('#extras')
-            .append('input')
-            .attr('id', 'searchBar')
-            .attr('type', 'search')
-            .attr('placeholder', 'Search for a city or state: (ex. "Boston" or "Texas")')
-            .style('display', 'block')
-            .style('top', titlePos.y + 60 + 'px')
-            .style('left', titlePos.x + 'px')
-            .on('keyup', filterPts)
-
-        fadeIn('.axis')
-
-    })
-}
-
-// add points for scatterplot
 function plotTags(){
 
     setPlotTitle('Average Headcount vs. Median Funding by Technology Type')
@@ -337,8 +197,6 @@ function plotTags(){
             }
         })
 
-        console.log(labels)
-
         svg.select('#tagPlot')
             .selectAll('.labels')
             .data(labels).enter()
@@ -362,14 +220,16 @@ function plotTags(){
             .attr('stroke', 'gray')
             .style('opacity', 0);
         
-        var titlePos = document.querySelector('#plotTitle').getBoundingClientRect()
+        // var titlePos = document.querySelector('#plotTitle').getBoundingClientRect()
 
         // make tag type toggle
         d3.select('#tagsMenu')
             .style('display', 'block')
             .style('position', 'absolute')
-            .style('top', titlePos.y + 60 + 'px')
-            .style('left', titlePos.x + 'px')
+            // .style('top', titlePos.y + 60 + 'px')
+            // .style('left', titlePos.x + 'px')
+            .style('top', margin.top * 1.5 + 'px')
+            .style('left', margin.left * 2 + 'px')
 
         d3.select('#tagsMenu') 
             .append('label')
@@ -407,8 +267,7 @@ function plotTags(){
             .style('opacity', 0)
             .on('mouseover', mouseoverTag)
             .on('mousemove', (event) => mousemovePt(event))
-            .on('mouseleave', mouseleaveTag)
-            .on('click', clickPt);
+            .on('mouseleave', mouseleaveTag);
 
         // show only points with selected tag type
         filterTags()
@@ -429,56 +288,6 @@ function hidePoints(){
         svg.select('#scatterplot').selectAll('.labelLines').remove()
         svg.select('#scatterplot').selectAll('.labels').remove()
     }, 500);
-}
-
-function filterPts(){
-
-    var points = d3.selectAll('.points');
-    var labels = svg.select('#scatterplot').selectAll('.labels'),
-        labelLines = svg.select('#scatterplot').selectAll('.labelLines');
-    var query = document.querySelector('#searchBar').value.toLowerCase();
-
-    points.style('fill', '#0077b6').style('opacity', 0.1)
-    if(query == ''){
-        points.style('fill', '#0077b6').style('opacity', 0.6)
-        labels.style('opacity', 1)
-        labelLines.style('opacity', 1)
-    }
-
-    if(query != ''){
-        labels.style('opacity', 0.1)
-        labelLines.style('opacity', 0.1)
-    }
-
-    // highlight point
-    d3.selectAll('.points')
-        .attr('opacity', 0.1)
-        .style('fill', 'gray')
-    
-    // recolor points that match search
-    points.data().forEach((d, i) => {
-        if(d.state.toLowerCase().startsWith(query) || d.city.toLowerCase().startsWith(query)){
-            var match = points['_groups'][0][i]
-            match.style.fill = '#0077b6'
-            match.style.opacity = 0.6
-        }
-    })
-    
-    // show labels that match
-    labels.data().forEach((d, i) => {
-        if(d.city.toLowerCase().startsWith(query) || d.state.toLowerCase().startsWith(query)){
-            var match = labels['_groups'][0][i]
-            match.style.opacity = 1
-        }
-    })
-
-    // show label lines that match
-    labels.data().forEach((d, i) => {
-        if(d.city.toLowerCase().startsWith(query) || d.state.toLowerCase().startsWith(query)){
-            var match = labelLines['_groups'][0][i]
-            match.style.opacity = 1
-        }
-    })
 }
 
 function filterTags(){
@@ -553,9 +362,6 @@ function mouseleavePt(){
 
 function mousemovePt(event){
 
-    
-    // console.log(tooltip.offsetHeight)
-
     var tooltip = document.querySelector('.tooltip'),
         window = document.querySelector('#svgDiv'),
         yPos = Math.min(window.offsetHeight - tooltip.offsetHeight - 30, event.clientY)
@@ -564,96 +370,6 @@ function mousemovePt(event){
         .style('left', (event.clientX+20) + 'px')
         .style('top', yPos + 'px');
 
-}
-
-// highlight point on mouseover
-function mouseoverPt(){
-
-    var data = d3.select(this).data()[0],
-    
-        // format data
-        city = data.city + ', ' + data.state,
-        companies = Intl.NumberFormat().format(data.companies),
-        funding = '$' + data.median.toFixed(2) + 'm',
-        headcount = data.headcount_IQM.toFixed(2),
-        query = document.querySelector('#searchBar').value;
-
-        rownames = ['City:', 'Median Funding:', 'Avg. Headcount:', '# Companies:']
-        info = [city, funding, headcount, companies];
-
-        // combine data for table
-        info.map((d, i) => {
-            return info[i] = [rownames[i], info[i]]
-        })
-        
-    if(query == '' | data.city.toLowerCase().startsWith(query.toLowerCase()) | data.state.toLowerCase().startsWith(query.toLowerCase())){
-
-        d3.select('.tooltip')
-            .style('opacity', 1)
-            .style('display', 'block')
-
-        // create frequency table of tags
-        var top_tags = {}
-        data.data.forEach(d => {
-            if(d.tech_tags){
-                var tags = d.tech_tags.replaceAll(/[^A-Za-z0-9_ /,]/g, '').split(',')
-                tags.forEach(tag => {
-                    if(tag == ''){
-                        return
-                    } else if(Object.keys(top_tags).includes(tag)){
-                        top_tags[tag].value += 1
-                    } else {
-                        top_tags[tag] = {
-                            'key': tag,
-                            'value': 1
-                        }
-                    }
-                })
-            }
-        })
-
-        // select tag names from top 5 most freq tags
-        top_tags = Object.values(top_tags).sort((a,b) => b.value - a.value).slice(0,5).map(d => d.key)
-
-        // add table and info
-        d3.select('.tooltip').append('table')
-            .style('table-layout', 'fixed')
-            .selectAll('tr')
-            .data(info)
-            .enter()    
-            .append('tr')
-            .classed('tooltipRownames', 'true')
-            .append('td')
-            .html(d => d[0] + ' <span style=\'font-weight:bolder\'>' + d[1] + '</span>')
-
-        d3.select('.tooltip').append('g')
-            .classed('tooltipTagList', 'true')
-
-        d3.select('.tooltipTagList')
-            .append('text')
-            .text('Top Industries:')
-        
-        d3.select('.tooltipTagList')
-            .append('ol')
-            .style('margin', '5px')
-            .selectAll('li')
-            .data(top_tags)
-            .enter()
-            .append('li')
-            .text(d => d)
-    }
-    
-    // change color if search bar is empty, else keep colors from filter
-    if(query == ''){
-        // highlight point
-        d3.selectAll('.points')
-            .attr('opacity', 0.1)
-            .style('fill', 'gray')
-        
-        d3.select(this)
-            .style('fill', '#0077b6')
-            .attr('opacity', 0.6)
-    }
 }
 
 // restore opacity
@@ -789,6 +505,6 @@ function showTags(){
     plotTags()
 }
 
-showPoints()
-// fadeOut('#plotTitle')
-// fadeOut('#plotSubtitle')
+showTags()
+fadeOut('#plotTitle')
+fadeOut('#plotSubtitle')

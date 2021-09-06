@@ -114,7 +114,7 @@ function fadeIn(className, duration = 500){
 
 function mapStates(){
 
-    setPlotTitle('Number of Funded Companies by State (n=68,587)')
+    setPlotTitle('Number of Funded Companies by State') // (n=68,587)')
     setPlotSubtitle('California, New York, Massachusetts, and Texas are the most popular states venture-funded companies.')
 
     // get map data from github
@@ -346,7 +346,7 @@ function clickMap(){
             })
         })
         qtrs.sort((a,b) => a.qtr - b.qtr)
-        setPlotTitle(`Founding Year of Companies in ${state}, by city (n=${Intl.NumberFormat().format(n)})`)
+        setPlotTitle(`Founding Year of Companies in ${state}, by city`)//  (n=${Intl.NumberFormat().format(n)})`)
         setPlotSubtitle(`Includes ${state}-based companies created from 2000 - 2020`)
         plotFoundingTimeline(qtrs, yMax)
     })
@@ -505,5 +505,5 @@ function showBaseLayer(){
 
 
 mapStates()
-fadeOut('#plotTitle')
-fadeOut('#plotSubtitle')
+// fadeOut('#plotTitle')
+// fadeOut('#plotSubtitle')

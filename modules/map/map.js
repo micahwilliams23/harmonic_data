@@ -505,3 +505,5 @@ function showBaseLayer(){
 
 
 mapStates()
+fadeOut('#plotTitle')
+fadeOut('#plotSubtitle')

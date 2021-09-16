@@ -241,13 +241,24 @@ function plotPoints(){
             .append('input')
             .attr('id', 'searchBar')
             .attr('type', 'search')
-            .attr('placeholder', 'Search for a city or state: (ex. "Boston" or "Texas")')
+            .attr('placeholder', 'Search city or state')
             .style('display', 'block')
             .style('top', titlePos.y + 60 + 'px')
-            .style('left', titlePos.x + 'px')
+            .style('left', titlePos.x + 20 + 'px')
             .on('keyup', filterPts)
 
         fadeIn('.axis')
+
+        d3.select('#extras')
+            .append('img')
+            .attr('id', 'search-icon')
+            .attr('src', 'search-icon.png')
+            .attr('width', 20)
+            .attr('height', 20)
+            .style('top', titlePos.y + 72 + 'px')
+            .style('left', titlePos.x + 32 + 'px')
+            .style('position', 'absolute')
+            .style('opacity', 0.75)
 
     })
 }
